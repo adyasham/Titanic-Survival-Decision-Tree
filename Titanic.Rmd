@@ -1,0 +1,68 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r}
+library(readr)
+Titanic <- read_csv("Titanic.csv")
+
+summary(Titanic) 
+library('ggplot2')
+library('lattice')
+library('caret') 
+library('rpart') 
+library('rpart.plot') 
+set.seed(80)
+```
+
+
+```{r}
+?createDataPartition
+trainIndex <- createDataPartition(Titanic$Survived, p=0.8, list=FALSE, time=1) 
+```
+
+
+```{r}
+trainset <- Titanic[trainIndex, ] 
+testset <- Titanic[-trainIndex,]
+```
+
+
+```{r}
+tree<-rpart(Survived ~ ., trainset, method="class")
+```
+
+
+```{r}
+rpart.plot(tree, cex=0.4, type=4)
+```
+
+
+
+
+#validate 
+```{r}
+predict_tree <- predict(tree, testset, type="class")
+confusionMatrix(predict_tree, testset$Survived)
+table(testset$Survived, predict_tree)
+
+```
+
+
+#TN = 106 FP = 13 FN = 16 TP = 43
+#Sensitivity= TP/(TP+FN)
+#specificity= TN/(TN+FP)
+#Accuracy= (TP+TN+FP+FN)/(TP+TN)
+
+
+#sen = TF/actual positive = 43/(43+16)= 0.729= 72.9%
+#specificity= TN/ actual Negative  106/(106+13)=  0.891 = 89.1%
+#accuracy = (43+106)/(106+13+16+43)=  0.837= 83.7%
+
+
+
+#3. Will the following passengers survive? (You can answer this question by looking at the tree) Pclass Sex Age SibSp Parch Fare Embarked #3male 22 1 0 7.25 S
+#according to the descion tree, a male greater than 13 does not survive
+
